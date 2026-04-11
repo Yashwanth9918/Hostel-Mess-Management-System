@@ -1,0 +1,148 @@
+import React, { useState, useEffect } from "react";
+import Navbar from "../components/Navbar.jsx";
+import Sidebar from "../components/Sidebar.jsx";
+import axios from "axios";
+import { API_BASE_URL } from "../config/api.js";
+
+export default function Menu() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [weeklyMenu, setWeeklyMenu] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [isPrevious, setIsPrevious] = useState(false);
+
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const messId = storedUser?.messId;
+
+  
+  const formatMenu = (menuData) => {
+    const formatted = {};
+    menuData.dailyMenus.forEach((dayMenu) => {
+      formatted[dayMenu.day] = {
+        breakfast:
+          dayMenu.meals.breakfast?.items[0]?.name || "Not available",
+        lunch: dayMenu.meals.lunch?.items[0]?.name || "Not available",
+        dinner: dayMenu.meals.dinner?.items[0]?.name || "Not available",
+      };
+    });
+    return formatted;
+  };
+
+  //  Fetch current week menu
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        setLoading(true);
+
+        // Try current week menu
+        const currentRes = await axios.get(
+          `${API_BASE_URL}/api/menu/current/${messId}`
+        );
+
+        if (currentRes.data && currentRes.data.data) {
+          const menu = currentRes.data.data;
+          setWeeklyMenu(formatMenu(menu));
+          setMessage("✅ Current week's menu is published.");
+          setIsPrevious(false);
+        } else {
+          throw new Error("No current week menu found");
+        }
+      } catch (error) {
+        console.warn("Current week menu not found, fetching previous...");
+
+        // If current not found, load previous week menu
+        try {
+          const prevRes = await axios.get(
+            `${API_BASE_URL}/api/menu/previous/${messId}`
+          );
+          const prevMenu = prevRes.data.data;
+          setWeeklyMenu(formatMenu(prevMenu));
+          setIsPrevious(true);
+          setMessage(
+            "⚠️ Current week menu is not published yet — showing previous week's menu."
+          );
+        } catch (prevError) {
+          console.error("No previous menu found either:", prevError.message);
+          setMessage("❌ No menu available currently.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (messId) fetchMenu();
+  }, [messId]);
+
+  // ⏳ Loading state
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center text-xl font-medium">
+        Loading menu...
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen font-sans">
+      <Navbar onOpenSidebar={() => setSidebarOpen(true)} />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      <main className="container-narrow py-10">
+        {/* Header */}
+        <header className="mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Weekly Mess Menu
+          </h1>
+          <p
+            className={`mt-2 text-sm ${
+              isPrevious
+                ? "text-yellow-600"
+                : message.includes("❌")
+                ? "text-red-600"
+                : "text-green-600"
+            }`}
+          >
+            {message}
+          </p>
+        </header>
+
+        {/* Menu display */}
+        {Object.keys(weeklyMenu).length === 0 ? (
+          <div className="text-neutral-500 mt-8">
+            No menu data available to display.
+          </div>
+        ) : (
+          <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {Object.entries(weeklyMenu).map(([day, meals]) => (
+              <div
+                key={day}
+                className="bg-white border border-neutral-200 shadow-sm rounded-xl p-5"
+              >
+                <h2 className="text-xl font-semibold mb-3 text-blue-700">
+                  {day}
+                </h2>
+
+                <p>
+                  <span className="font-medium text-neutral-700">
+                    Breakfast:
+                  </span>{" "}
+                  {meals.breakfast}
+                </p>
+                <p>
+                  <span className="font-medium text-neutral-700">Lunch:</span>{" "}
+                  {meals.lunch}
+                </p>
+                <p>
+                  <span className="font-medium text-neutral-700">Dinner:</span>{" "}
+                  {meals.dinner}
+                </p>
+              </div>
+            ))}
+          </section>
+        )}
+      </main>
+    </div>
+  );
+}
+
+

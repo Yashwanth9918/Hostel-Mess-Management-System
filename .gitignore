@@ -1,0 +1,32 @@
+# Dependencies and lock files
+# These folders can be huge and should be installed by each developer locally.
+/node_modules
+/client/node_modules/
+/server/node_modules/
+npm-debug.log
+yarn.lock
+pnpm-lock.yaml
+
+# Build output folders
+# These are generated automatically from your source code.
+/client/dist
+/client/build
+/server/dist
+
+# Environment variables
+# This is CRITICAL. These files contain secrets like database passwords.
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+/server/.env
+/client/.env
+
+# macOS and Windows specific files
+.DS_Store
+Thumbs.db
+
+# IDE and editor directories
+.vscode/
+.idea/

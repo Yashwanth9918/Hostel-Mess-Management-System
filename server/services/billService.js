@@ -1,0 +1,399 @@
+import Bill from '../models/Bill.js';
+import User from '../models/User.js';
+import AppError from '../utils/AppError.js';
+
+/**
+ * Billing Service
+ *
+ * Contains all business logic for billing operations.
+ */
+
+// Default meal rates (can be configured via env or DB in future)
+const DEFAULT_MEAL_RATES = {
+  breakfast: 30,
+  lunch: 50,
+  eveningSnacks: 20,
+  dinner: 50,
+};
+
+const DEFAULT_FIXED_CHARGES = 0;
+
+/**
+ * Round bill total to nearest rupee and save if changed.
+ * @private
+ */
+const ensureRoundedTotal = async (bill) => {
+  if (!bill || bill.totalAmount == null) return bill;
+
+  const rounded = Math.round(Number(bill.totalAmount));
+
+  if (bill.isModified !== undefined) {
+    if (rounded !== bill.totalAmount) {
+      bill.totalAmount = rounded;
+      await bill.save();
+    }
+    return bill;
+  }
+
+  bill.totalAmount = rounded;
+  return bill;
+};
+
+/**
+ * Get all bills stats with optional month/year filter.
+ */
+export const getAllBillsStats = async (month, year) => {
+  const match = { isActive: true, isCancelled: false };
+
+  if (month && year) {
+    match.month = parseInt(month);
+    match.year = parseInt(year);
+  }
+
+  const result = await Bill.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: null,
+        totalBills: { $sum: 1 },
+        paidBills: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'paid'] }, 1, 0] } },
+        unpaidBills: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'unpaid'] }, 1, 0] } },
+        partiallyPaidBills: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'partially_paid'] }, 1, 0] } },
+        overdueBills: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'overdue'] }, 1, 0] } },
+      },
+    },
+  ]);
+
+  return result.length > 0
+    ? result[0]
+    : { totalBills: 0, paidBills: 0, unpaidBills: 0, partiallyPaidBills: 0, overdueBills: 0 };
+};
+
+/**
+ * Get total active students count.
+ */
+export const getStudentsCount = async () => {
+  const count = await User.countDocuments({ role: 'student', isActive: true });
+  return { totalStudents: count };
+};
+
+/**
+ * Mark bills as paid by a student.
+ */
+export const markBillsAsPaid = async (userId, billIds) => {
+  const bills = await Bill.find({
+    _id: { $in: billIds },
+    studentId: userId,
+    isActive: true,
+    isCancelled: false,
+  });
+
+  if (bills.length === 0) {
+    throw new AppError('No valid bills found for this user', 404);
+  }
+
+  for (const bill of bills) {
+    bill.amountPaid = bill.totalAmount;
+    bill.amountDue = 0;
+    bill.paymentStatus = 'paid';
+    bill.paidDate = new Date();
+    bill.paymentHistory.push({
+      amount: bill.totalAmount,
+      paymentMethod: 'upi',
+      transactionId: `manual-${Date.now()}`,
+      paymentStatus: 'success',
+      remarks: 'Student marked as paid via UPI self-confirmation',
+      receivedBy: userId,
+    });
+    await bill.save();
+  }
+
+  return bills.length;
+};
+
+/**
+ * Generate a bill for a single student.
+ */
+export const generateBill = async (userId, { studentId, messId, month, year, mealRates, fixedCharges }) => {
+  const rates = mealRates || DEFAULT_MEAL_RATES;
+  const fixed = fixedCharges || DEFAULT_FIXED_CHARGES;
+
+  const bill = await Bill.generateFromAttendance(studentId, messId, month, year, rates, fixed, userId);
+
+  // Ensure rounding
+  const doc = await Bill.findById(bill._id);
+  await ensureRoundedTotal(doc);
+
+  // Return populated bill
+  const finalBill = await Bill.findById(bill._id).populate(
+    'studentId',
+    'name email registrationNumber hostelId'
+  );
+
+  return finalBill;
+};
+
+/**
+ * Generate bills for all students in a mess.
+ */
+export const generateAllBills = async (userId, { messId, month, year, mealRates, fixedCharges }) => {
+  const rates = mealRates || DEFAULT_MEAL_RATES;
+  const fixed = fixedCharges || DEFAULT_FIXED_CHARGES;
+
+  const students = await User.find({ messId, role: 'student', isActive: true });
+
+  const generatedBills = [];
+  const errors = [];
+
+  for (const student of students) {
+    try {
+      const bill = await Bill.generateFromAttendance(student._id, messId, month, year, rates, fixed, userId);
+
+      const doc = await Bill.findById(bill._id);
+      await ensureRoundedTotal(doc);
+
+      generatedBills.push(bill);
+    } catch (error) {
+      errors.push({
+        studentId: student._id,
+        name: student.name,
+        error: error.message,
+      });
+    }
+  }
+
+  return {
+    generated: generatedBills.length,
+    errors: errors.length,
+    errorDetails: errors,
+  };
+};
+
+/**
+ * Get bills for the logged-in student.
+ */
+export const getMyBills = async (userId, { year, paymentStatus, page = 1, limit = 10 }) => {
+  const skip = (page - 1) * limit;
+
+  const query = {
+    studentId: userId,
+    isActive: true,
+    isCancelled: false,
+  };
+
+  if (year) query.year = parseInt(year);
+  if (paymentStatus) query.paymentStatus = paymentStatus;
+
+  const bills = await Bill.find(query)
+    .sort({ year: -1, month: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const total = await Bill.countDocuments(query);
+
+  return { bills, total, page, limit };
+};
+
+/**
+ * Get bill by ID with authorization checks.
+ */
+export const getBillById = async (user, billId) => {
+  const bill = await Bill.findById(billId)
+    .populate('studentId', 'name email registrationNumber hostelId messId')
+    .populate('generatedBy', 'name email')
+    .populate('paymentHistory.receivedBy', 'name email');
+
+  if (!bill) {
+    throw new AppError('Bill not found', 404);
+  }
+
+  // Students can only view their own bills
+  if (user.role === 'student' && bill.studentId._id.toString() !== user._id.toString()) {
+    throw new AppError('You can only view your own bills', 403);
+  }
+
+  // Managers can only view bills for their mess
+  if (user.role === 'manager' && bill.messId !== user.messId) {
+    throw new AppError('You can only view bills for your assigned mess', 403);
+  }
+
+  return bill;
+};
+
+/**
+ * Get all bills for a mess (paginated).
+ */
+export const getMessBills = async (user, messId, filters) => {
+  if (user.role === 'manager' && user.messId !== messId) {
+    throw new AppError('You can only view bills for your assigned mess', 403);
+  }
+
+  const { month, year, paymentStatus, studentId, page = 1, limit = 20 } = filters;
+  const skip = (page - 1) * limit;
+
+  const query = { messId, isActive: true, isCancelled: false };
+
+  if (month) query.month = parseInt(month);
+  if (year) query.year = parseInt(year);
+  if (paymentStatus) query.paymentStatus = paymentStatus;
+  if (studentId) query.studentId = studentId;
+
+  const bills = await Bill.find(query)
+    .sort({ year: -1, month: -1, createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .populate('studentId', 'name registrationNumber hostelId email');
+
+  const total = await Bill.countDocuments(query);
+
+  return { bills, total, page, limit };
+};
+
+/**
+ * Get unpaid bills for a mess.
+ */
+export const getUnpaidBills = async (user, messId) => {
+  if (user.role === 'manager' && user.messId !== messId) {
+    throw new AppError('You can only view bills for your assigned mess', 403);
+  }
+
+  return await Bill.getUnpaidBills(messId);
+};
+
+/**
+ * Get overdue bills for a mess.
+ */
+export const getOverdueBills = async (user, messId) => {
+  if (user.role === 'manager' && user.messId !== messId) {
+    throw new AppError('You can only view bills for your assigned mess', 403);
+  }
+
+  return await Bill.getOverdueBills(messId);
+};
+
+/**
+ * Add payment to a bill.
+ */
+export const addPayment = async (user, billId, { amount, paymentMethod, transactionId, remarks }) => {
+  const bill = await Bill.findById(billId);
+
+  if (!bill) {
+    throw new AppError('Bill not found', 404);
+  }
+
+  if (user.role === 'manager' && bill.messId !== user.messId) {
+    throw new AppError('You can only process payments for your assigned mess', 403);
+  }
+
+  if (amount > bill.amountDue) {
+    throw new AppError('Payment amount exceeds due amount', 400);
+  }
+
+  bill.addPayment(amount, paymentMethod, transactionId, user._id, remarks);
+  await bill.save();
+
+  return await Bill.findById(bill._id)
+    .populate('studentId', 'name registrationNumber')
+    .populate('paymentHistory.receivedBy', 'name email');
+};
+
+/**
+ * Apply discount to a bill.
+ */
+export const applyDiscount = async (billId, { discountAmount, reason }) => {
+  const bill = await Bill.findById(billId);
+
+  if (!bill) {
+    throw new AppError('Bill not found', 404);
+  }
+
+  bill.applyDiscount(discountAmount, reason);
+  await bill.save();
+  await ensureRoundedTotal(bill);
+
+  return bill;
+};
+
+/**
+ * Apply late fee to a bill.
+ */
+export const applyLateFee = async (billId, { feeAmount, reason }) => {
+  const bill = await Bill.findById(billId);
+
+  if (!bill) {
+    throw new AppError('Bill not found', 404);
+  }
+
+  bill.applyLateFee(feeAmount, reason);
+  await bill.save();
+  await ensureRoundedTotal(bill);
+
+  return bill;
+};
+
+/**
+ * Cancel a bill.
+ */
+export const cancelBill = async (userId, billId, reason) => {
+  const bill = await Bill.findById(billId);
+
+  if (!bill) {
+    throw new AppError('Bill not found', 404);
+  }
+
+  bill.cancelBill(userId, reason);
+  await bill.save();
+
+  return bill;
+};
+
+/**
+ * Get billing summary for a mess/month/year.
+ */
+export const getBillingSummary = async (user, messId, month, year) => {
+  if (user.role === 'manager' && user.messId !== messId) {
+    throw new AppError('You can only view summary for your assigned mess', 403);
+  }
+
+  const summary = await Bill.getBillingSummary(messId, parseInt(month), parseInt(year));
+
+  if (!summary) {
+    throw new AppError('No billing data found for the specified period', 404);
+  }
+
+  return summary;
+};
+
+/**
+ * Auto-apply late fees to overdue bills.
+ */
+export const autoApplyLateFees = async (lateFeeAmount) => {
+  const amount = lateFeeAmount || 50;
+  const count = await Bill.applyLateFees(amount);
+  return { billsUpdated: count };
+};
+
+/**
+ * Update a bill.
+ */
+export const updateBill = async (billId, updateData) => {
+  const bill = await Bill.findById(billId);
+
+  if (!bill) {
+    throw new AppError('Bill not found', 404);
+  }
+
+  let updatedBill = await Bill.findByIdAndUpdate(billId, updateData, {
+    new: true,
+    runValidators: true,
+  }).populate('studentId', 'name registrationNumber');
+
+  const doc = await Bill.findById(updatedBill._id);
+  await ensureRoundedTotal(doc);
+
+  // Re-populate after possible save
+  updatedBill = await Bill.findById(updatedBill._id)
+    .populate('studentId', 'name registrationNumber');
+
+  return updatedBill;
+};

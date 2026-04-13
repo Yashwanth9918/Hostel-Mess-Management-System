@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api.js";
-import loginImg from "../assets/login-illustration.png";
+import loginImg from "../assets/login-illustration.jpg";
 import MyLogo from "../assets/logo.png";
 
 export default function SignIn() {
@@ -39,14 +39,14 @@ export default function SignIn() {
 
       if (response.status === 200) {
         alert("Login successful!");
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-        localStorage.setItem("token", response.data.token);
+        const { user, token } = response.data.data;
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("token", token);
 
         // Redirect based on role
-        const role = response.data.user.role;
-        if (role === "student") navigate("/student");
-        else if (role === "manager") navigate("/manager");
-        else if (role === "admin") navigate("/admin");
+        if (user.role === "student") navigate("/student");
+        else if (user.role === "manager") navigate("/manager");
+        else if (user.role === "admin") navigate("/admin");
         else navigate("/");
       } else {
         alert(response.data.message || "Login failed!");
@@ -55,7 +55,7 @@ export default function SignIn() {
       console.error("Login Error:", error);
       alert(
         error.response?.data?.message ||
-          "Could not connect to server. Please try again later."
+        "Could not connect to server. Please try again later."
       );
     }
   };
@@ -67,10 +67,10 @@ export default function SignIn() {
         <div className="p-8 sm:p-12">
           {/* Brand */}
           <div className="mb-10 flex items-center gap-3">
-                      <img src={MyLogo} alt="IIITA Mess" className="h-8 w-8 object-contain" />
-                      <span className="text-lg font-semibold tracking-tight text-neutral-800">IIITA Mess </span>
-                    </div>
-         
+            <img src={MyLogo} alt="IIITA Mess" className="h-8 w-8 object-contain" />
+            <span className="text-lg font-semibold tracking-tight text-neutral-800">IIITA Mess </span>
+          </div>
+
 
           <h1 className="text-4xl font-bold tracking-tight">Welcome Back</h1>
           <p className="text-neutral-600 mt-2">

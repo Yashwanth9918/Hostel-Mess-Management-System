@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config/api.js";
-import loginImg from "../assets/login-illustration.png";
+import loginImg from "../assets/login-illustration.jpg";
 import MyLogo from "../assets/logo.png";
 
 export default function SignUp() {
@@ -46,7 +46,7 @@ export default function SignUp() {
       console.error("Registration Error:", error);
       alert(
         error.response?.data?.message ||
-          "Could not connect to server. Please try again later."
+        "Could not connect to server. Please try again later."
       );
     }
   };
@@ -217,7 +217,7 @@ export default function SignUp() {
         {/* Right: Illustration */}
         <div className="hidden lg:block relative">
           <img
-            src={loginImg} 
+            src={loginImg}
             alt="Sign Up Illustration"
             className="absolute inset-0 w-full h-full object-cover rounded-r-2xl"
           />

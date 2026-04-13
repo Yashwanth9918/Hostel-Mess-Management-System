@@ -1,84 +1,64 @@
-import User from "../models/User.js";
-import Feedback from "../models/Feedback.js";
-import Bill from "../models/Bill.js";
-import Attendance from "../models/Attendance.js";
+import User from '../models/User.js';
+import Feedback from '../models/Feedback.js';
+import Bill from '../models/Bill.js';
+import Attendance from '../models/Attendance.js';
+import asyncHandler from '../utils/asyncHandler.js';
+import { sendSuccess } from '../utils/apiResponse.js';
 
-// @desc System-wide summary stats
-// @route GET /api/reports/system
-// @access Admin
-export const getSystemReport = async (req, res) => {
-  try {
-    const today = new Date();
-    const month = today.getMonth() + 1;
-    const year = today.getFullYear();
+/**
+ * Report Controller
+ *
+ * System-wide analytics and statistics.
+ */
 
-    // Build month range
-    const startOfMonth = new Date(year, month - 1, 1);
-    const endOfMonth = new Date(year, month, 0, 23, 59, 59);
+// @desc    System-wide summary stats
+// @route   GET /api/reports/system
+// @access  Admin
+export const getSystemReport = asyncHandler(async (req, res) => {
+  const today = new Date();
+  const month = today.getMonth() + 1;
+  const year = today.getFullYear();
 
-    // 1️⃣ Total students
-    const totalStudents = await User.countDocuments({ role: "student" });
+  const startOfMonth = new Date(year, month - 1, 1);
+  const endOfMonth = new Date(year, month, 0, 23, 59, 59);
 
-    // 2️⃣ Average meal rating
-    const ratingAgg = await Feedback.aggregate([
-      {
-        $match: { date: { $gte: startOfMonth, $lte: endOfMonth } },
-      },
-      {
-        $group: { _id: null, avgRating: { $avg: "$overallRating" } },
-      },
-    ]);
-    const avgMealRating = ratingAgg.length ? ratingAgg[0].avgRating : 0;
+  // Run all queries in parallel for better performance
+  const [totalStudents, ratingAgg, revenueAgg, attendanceAgg] = await Promise.all([
+    User.countDocuments({ role: 'student' }),
 
-    // 3️⃣ Monthly revenue
-    const revenueAgg = await Bill.aggregate([
-      {
-        $match: {
-          month,
-          year,
-          paymentStatus: "paid",
-        },
-      },
-      {
-        $group: { _id: null, total: { $sum: "$totalAmount" } },
-      },
-    ]);
-    const monthlyRevenue = revenueAgg.length ? revenueAgg[0].total : 0;
+    Feedback.aggregate([
+      { $match: { date: { $gte: startOfMonth, $lte: endOfMonth } } },
+      { $group: { _id: null, avgRating: { $avg: '$overallRating' } } },
+    ]),
 
-    // 4️⃣ Attendance rate
-    const attendanceAgg = await Attendance.aggregate([
-      {
-        $match: { month, year },
-      },
+    Bill.aggregate([
+      { $match: { month, year, paymentStatus: 'paid' } },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } },
+    ]),
+
+    Attendance.aggregate([
+      { $match: { month, year } },
       {
         $group: {
           _id: null,
-          totalDays: { $sum: "$totalDays" },
-          presentDays: { $sum: "$daysPresent" },
+          totalDays: { $sum: '$totalDays' },
+          presentDays: { $sum: '$daysPresent' },
         },
       },
-    ]);
+    ]),
+  ]);
 
-    const attendanceRate =
-      attendanceAgg.length && attendanceAgg[0].totalDays > 0
-        ? (attendanceAgg[0].presentDays / attendanceAgg[0].totalDays) * 100
-        : 0;
+  const avgMealRating = ratingAgg.length ? ratingAgg[0].avgRating : 0;
+  const monthlyRevenue = revenueAgg.length ? revenueAgg[0].total : 0;
+  const attendanceRate =
+    attendanceAgg.length && attendanceAgg[0].totalDays > 0
+      ? (attendanceAgg[0].presentDays / attendanceAgg[0].totalDays) * 100
+      : 0;
 
-    res.status(200).json({
-      success: true,
-      data: {
-        totalStudents,
-        avgMealRating,
-        monthlyRevenue,
-        attendanceRate,
-      },
-    });
-  } catch (error) {
-    console.error("Error generating system report:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while generating system report",
-      error: error.message,
-    });
-  }
-};
+  sendSuccess(res, {
+    totalStudents,
+    avgMealRating,
+    monthlyRevenue,
+    attendanceRate,
+  });
+});

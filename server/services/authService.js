@@ -24,7 +24,6 @@ const sanitizeUser = (user) => ({
   role: user.role,
   registrationNumber: user.registrationNumber,
   hostelId: user.hostelId,
-  messId: user.messId,
 });
 
 /**
@@ -32,10 +31,10 @@ const sanitizeUser = (user) => ({
  *
  * @param {Object} userData - Registration form data
  * @returns {{ user: Object, token: string }}
- * @throws {AppError} 400 if email/regNo already exists or messId missing
+ * @throws {AppError} 400 if email/regNo already exists or hostelId missing
  */
 export const registerUser = async (userData) => {
-  const { name, email, password, role, registrationNumber, hostelId, messId, contactNumber } = userData;
+  const { name, email, password, role, registrationNumber, hostelId, contactNumber } = userData;
 
   // Check if email already taken
   const emailExists = await User.findOne({ email });
@@ -51,9 +50,9 @@ export const registerUser = async (userData) => {
     }
   }
 
-  // Validate messId requirement for students and managers
-  if ((role === 'student' || role === 'manager') && !messId) {
-    throw new AppError(`Mess ID is required for ${role}s`, 400);
+  // Validate hostelId requirement for students and managers
+  if ((role === 'student' || role === 'manager') && !hostelId) {
+    throw new AppError(`Hostel ID is required for ${role}s`, 400);
   }
 
   // Create user (password hashing happens in the User model pre-save hook)
@@ -64,7 +63,6 @@ export const registerUser = async (userData) => {
     role: role || 'student',
     registrationNumber,
     hostelId,
-    messId,
     contactNumber,
   });
 

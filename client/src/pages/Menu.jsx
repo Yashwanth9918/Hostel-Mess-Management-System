@@ -12,7 +12,7 @@ export default function Menu() {
   const [isPrevious, setIsPrevious] = useState(false);
 
   const storedUser = JSON.parse(localStorage.getItem("user"));
-  const messId = storedUser?.messId;
+  const hostelId = storedUser?.hostelId;
 
   
   const formatMenu = (menuData) => {
@@ -36,7 +36,7 @@ export default function Menu() {
 
         // Try current week menu
         const currentRes = await axios.get(
-          `${API_BASE_URL}/api/menu/current/${messId}`
+          `${API_BASE_URL}/api/menu/current/${hostelId}`
         );
 
         if (currentRes.data && currentRes.data.data) {
@@ -53,7 +53,7 @@ export default function Menu() {
         // If current not found, load previous week menu
         try {
           const prevRes = await axios.get(
-            `${API_BASE_URL}/api/menu/previous/${messId}`
+            `${API_BASE_URL}/api/menu/previous/${hostelId}`
           );
           const prevMenu = prevRes.data.data;
           setWeeklyMenu(formatMenu(prevMenu));
@@ -70,8 +70,8 @@ export default function Menu() {
       }
     };
 
-    if (messId) fetchMenu();
-  }, [messId]);
+    if (hostelId) fetchMenu();
+  }, [hostelId]);
 
   // ⏳ Loading state
   if (loading) {

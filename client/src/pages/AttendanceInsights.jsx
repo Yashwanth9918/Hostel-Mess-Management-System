@@ -37,7 +37,7 @@ export default function AttendanceInsights() {
   const BASE = API_BASE_URL;
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const token = localStorage.getItem("token");
-  const messId = user?.messId;
+  const hostelId = user?.hostelId;
 
   // Only mess manager should access — quick client-side guard
   useEffect(() => {
@@ -60,8 +60,8 @@ export default function AttendanceInsights() {
   };
 
   const loadAnalytics = async () => {
-    if (!messId) {
-      alert("Manager's messId not found in profile. Ensure you are signed in.");
+    if (!hostelId) {
+      alert("Manager's hostelId not found in profile. Ensure you are signed in.");
       return;
     }
 
@@ -74,10 +74,10 @@ export default function AttendanceInsights() {
       }
 
       // Parallel requests (one per day) to server endpoint:
-      // controller: [`getMessAttendance`](server/controllers/attendanceController.js) - GET /api/attendance/mess/:messId/:date
+      // controller: [`getMessAttendance`](server/controllers/attendanceController.js) - GET /api/attendance/mess/:hostelId/:date
       const promises = days.map((d) =>
         axios.get(
-          `${BASE}/api/attendance/mess/${encodeURIComponent(messId)}/${d.toISOString()}`,
+          `${BASE}/api/attendance/mess/${encodeURIComponent(hostelId)}/${d.toISOString()}`,
           { headers: { Authorization: `Bearer ${token}` } }
         ).then(res => ({ ok: true, data: res.data })).catch(err => ({ ok: false, error: err }))
       );
@@ -180,7 +180,7 @@ export default function AttendanceInsights() {
         <header className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Attendance Insights</h1>
           <p className="text-neutral-600 mt-1">
-            Manager view: attendance analytics for mess <strong>{messId || "—"}</strong>.
+            Manager view: attendance analytics for mess <strong>{hostelId || "—"}</strong>.
           </p>
         </header>
 

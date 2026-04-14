@@ -32,8 +32,8 @@ export default function MessManagerDashboard() {
           const BASE = API_BASE_URL;
           const token = localStorage.getItem("token");
           const user = JSON.parse(localStorage.getItem("user") || "{}");
-          const messId = user?.messId;
-          if (!messId || !token) return;
+          const hostelId = user?.hostelId;
+          if (!hostelId || !token) return;
   
           const today = new Date();
           const month = today.getMonth() + 1;
@@ -47,13 +47,13 @@ export default function MessManagerDashboard() {
   
           // Mess attendance for today -> absence (students on leave)
           const attPromise = axios.get(
-            `${BASE}/api/attendance/mess/${encodeURIComponent(messId)}/${today.toISOString()}`,
+            `${BASE}/api/attendance/mess/${encodeURIComponent(hostelId)}/${today.toISOString()}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
   
           // Menus for mess -> count cycles
           const menuPromise = axios.get(
-            `${BASE}/api/menu/mess/${encodeURIComponent(messId)}?limit=52`,
+            `${BASE}/api/menu/mess/${encodeURIComponent(hostelId)}?limit=52`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
   

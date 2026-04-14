@@ -8,18 +8,18 @@ export default function PaymentRecords() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [bills, setBills] = useState([]);
-  const [messId, setMessId] = useState("");
+  const [hostelId, setHostelId] = useState("");
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
 
   const loadBills = async () => {
-    if (!messId?.trim()) {
-      alert("Please enter a Mess ID");
+    if (!hostelId?.trim()) {
+      alert("Please enter a Hostel ID");
       return;
     }
     try {
       setLoading(true);
-      const res = await getMessBills(messId.trim(), { limit: 500 });
+      const res = await getMessBills(hostelId.trim(), { limit: 500 });
       if (res.data?.success) {
         setBills(res.data.data || []);
       } else {
@@ -67,9 +67,9 @@ export default function PaymentRecords() {
         <div className="bg-white p-4 rounded-xl border mb-6 flex gap-3 items-center">
           <input
             type="text"
-            placeholder="Enter Mess ID (e.g. M01)"
-            value={messId}
-            onChange={(e) => setMessId(e.target.value)}
+            placeholder="Enter Hostel ID (e.g. H01)"
+            value={hostelId}
+            onChange={(e) => setHostelId(e.target.value)}
             className="px-3 py-2 border rounded-md w-44 text-sm"
           />
           <PrimaryButton onClick={loadBills} disabled={loading}>

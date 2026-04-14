@@ -80,9 +80,9 @@ const BillSchema = new mongoose.Schema(
       required: [true, 'Student ID is required'],
       index: true,
     },
-    messId: {
+    hostelId: {
       type: String,
-      required: [true, 'Mess ID is required'],
+      required: [true, 'Hostel ID is required'],
       index: true,
     },
     month: {
@@ -229,7 +229,7 @@ const BillSchema = new mongoose.Schema(
 
 // Indexes for better query performance
 BillSchema.index({ studentId: 1, month: 1, year: 1 }, { unique: true });
-BillSchema.index({ messId: 1, month: 1, year: 1 });
+BillSchema.index({ hostelId: 1, month: 1, year: 1 });
 BillSchema.index({ paymentStatus: 1, dueDate: 1 });
 BillSchema.index({ billNumber: 1 });
 
@@ -284,8 +284,8 @@ BillSchema.pre('save', function (next) {
 });
 
 // Generate unique bill number
-BillSchema.statics.generateBillNumber = async function (messId, month, year) {
-  const prefix = `${messId}-${year}${month.toString().padStart(2, '0')}`;
+BillSchema.statics.generateBillNumber = async function (hostelId, month, year) {
+  const prefix = `${hostelId}-${year}${month.toString().padStart(2, '0')}`;
   const count = await this.countDocuments({
     billNumber: { $regex: `^${prefix}` },
   });
@@ -333,7 +333,7 @@ BillSchema.methods.cancelBill = function (userId, reason) {
 // Static method to generate bill from attendance data
 BillSchema.statics.generateFromAttendance = async function (
   studentId,
-  messId,
+  hostelId,
   month,
   year,
   mealRates,
@@ -399,7 +399,7 @@ BillSchema.statics.generateFromAttendance = async function (
   }
 
   // Generate bill number
-  const billNumber = await this.generateBillNumber(messId, month, year);
+  const billNumber = await this.generateBillNumber(hostelId, month, year);
 
   // Set due date (15 days from bill generation)
   const dueDate = new Date();
@@ -409,7 +409,7 @@ BillSchema.statics.generateFromAttendance = async function (
   const bill = await this.create({
     billNumber,
     studentId,
-    messId,
+    hostelId,
     month,
     year,
     billingPeriod: { startDate, endDate },
@@ -427,9 +427,9 @@ BillSchema.statics.generateFromAttendance = async function (
 };
 
 // Static method to get unpaid bills
-BillSchema.statics.getUnpaidBills = async function (messId) {
+BillSchema.statics.getUnpaidBills = async function (hostelId) {
   return await this.find({
-    messId,
+    hostelId,
     paymentStatus: { $in: ['unpaid', 'partially_paid', 'overdue'] },
     isActive: true,
     isCancelled: false,
@@ -439,10 +439,10 @@ BillSchema.statics.getUnpaidBills = async function (messId) {
 };
 
 // Static method to get overdue bills
-BillSchema.statics.getOverdueBills = async function (messId) {
+BillSchema.statics.getOverdueBills = async function (hostelId) {
   const today = new Date();
   return await this.find({
-    messId,
+    hostelId,
     dueDate: { $lt: today },
     paymentStatus: { $in: ['unpaid', 'partially_paid', 'overdue'] },
     isActive: true,
@@ -453,11 +453,11 @@ BillSchema.statics.getOverdueBills = async function (messId) {
 };
 
 // Static method to get billing summary
-BillSchema.statics.getBillingSummary = async function (messId, month, year) {
+BillSchema.statics.getBillingSummary = async function (hostelId, month, year) {
   const result = await this.aggregate([
     {
       $match: {
-        messId,
+        hostelId,
         month,
         year,
         isActive: true,

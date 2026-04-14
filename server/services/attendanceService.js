@@ -11,7 +11,7 @@ import AppError from '../utils/AppError.js';
 /**
  * Mark daily attendance (create or update).
  */
-export const markAttendance = async (studentId, messId, { date, meals, isOnLeave }) => {
+export const markAttendance = async (studentId, hostelId, { date, meals, isOnLeave }) => {
   const attendanceDate = new Date(date);
   attendanceDate.setHours(0, 0, 0, 0);
 
@@ -32,7 +32,7 @@ export const markAttendance = async (studentId, messId, { date, meals, isOnLeave
   // Create new record
   const newRecord = await Attendance.create({
     studentId,
-    messId,
+    hostelId,
     date: attendanceDate,
     meals: meals || [],
     isOnLeave: isOnLeave || false,
@@ -44,7 +44,7 @@ export const markAttendance = async (studentId, messId, { date, meals, isOnLeave
 /**
  * Register leave for multiple days.
  */
-export const registerLeave = async (studentId, messId, { startDate, endDate, reason, description }) => {
+export const registerLeave = async (studentId, hostelId, { startDate, endDate, reason, description }) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
 
@@ -62,7 +62,7 @@ export const registerLeave = async (studentId, messId, { startDate, endDate, rea
   // Delegate to model static method (handles overlap checks)
   const attendanceRecords = await Attendance.registerLeave(
     studentId,
-    messId,
+    hostelId,
     start,
     end,
     reason,
@@ -122,7 +122,7 @@ export const getAttendanceSummary = async (studentId, month, year) => {
   );
 
   const student = await User.findById(studentId)
-    .select('name email registrationNumber hostelId messId');
+    .select('name email registrationNumber hostelId');
 
   return { student, summary };
 };
@@ -130,13 +130,13 @@ export const getAttendanceSummary = async (studentId, month, year) => {
 /**
  * Get mess-wise attendance for a date.
  */
-export const getMessAttendance = async (user, messId, date) => {
-  // Managers can only view their own mess
-  if (user.role === 'manager' && user.messId !== messId) {
-    throw new AppError('You can only view attendance for your assigned mess', 403);
+export const getMessAttendance = async (user, hostelId, date) => {
+  // Managers can only view their own hostel
+  if (user.role === 'manager' && user.hostelId !== hostelId) {
+    throw new AppError('You can only view attendance for your assigned hostel', 403);
   }
 
-  const attendance = await Attendance.getMessAttendance(messId, new Date(date));
+  const attendance = await Attendance.getMessAttendance(hostelId, new Date(date));
 
   // Calculate statistics
   const totalStudents = attendance.length;
@@ -164,9 +164,9 @@ export const updateAttendance = async (user, attendanceId, updateData) => {
     throw new AppError('Attendance record not found', 404);
   }
 
-  // Managers can only update their own mess
-  if (user.role === 'manager' && user.messId !== attendance.messId) {
-    throw new AppError('You can only update attendance for your assigned mess', 403);
+  // Managers can only update their own hostel
+  if (user.role === 'manager' && user.hostelId !== attendance.hostelId) {
+    throw new AppError('You can only update attendance for your assigned hostel', 403);
   }
 
   const updatedAttendance = await Attendance.findByIdAndUpdate(

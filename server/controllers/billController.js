@@ -71,26 +71,26 @@ export const getBillById = asyncHandler(async (req, res) => {
 });
 
 // @desc    Get all bills for mess
-// @route   GET /api/bills/mess/:messId
+// @route   GET /api/bills/mess/:hostelId
 // @access  Private (Manager/Admin)
 export const getMessBills = asyncHandler(async (req, res) => {
-  const result = await billService.getMessBills(req.user, req.params.messId, req.query);
+  const result = await billService.getMessBills(req.user, req.params.hostelId, req.query);
   sendPaginated(res, result.bills, result.page, result.limit, result.total);
 });
 
 // @desc    Get unpaid bills
-// @route   GET /api/bills/unpaid/:messId
+// @route   GET /api/bills/unpaid/:hostelId
 // @access  Private (Manager/Admin)
 export const getUnpaidBills = asyncHandler(async (req, res) => {
-  const bills = await billService.getUnpaidBills(req.user, req.params.messId);
+  const bills = await billService.getUnpaidBills(req.user, req.params.hostelId);
   sendSuccess(res, bills);
 });
 
 // @desc    Get overdue bills
-// @route   GET /api/bills/overdue/:messId
+// @route   GET /api/bills/overdue/:hostelId
 // @access  Private (Manager/Admin)
 export const getOverdueBills = asyncHandler(async (req, res) => {
-  const bills = await billService.getOverdueBills(req.user, req.params.messId);
+  const bills = await billService.getOverdueBills(req.user, req.params.hostelId);
   sendSuccess(res, bills);
 });
 
@@ -127,11 +127,11 @@ export const cancelBill = asyncHandler(async (req, res) => {
 });
 
 // @desc    Get billing summary
-// @route   GET /api/bills/summary/:messId/:month/:year
+// @route   GET /api/bills/summary/:hostelId/:month/:year
 // @access  Private (Manager/Admin)
 export const getBillingSummary = asyncHandler(async (req, res) => {
-  const { messId, month, year } = req.params;
-  const summary = await billService.getBillingSummary(req.user, messId, month, year);
+  const { hostelId, month, year } = req.params;
+  const summary = await billService.getBillingSummary(req.user, hostelId, month, year);
   sendSuccess(res, summary);
 });
 

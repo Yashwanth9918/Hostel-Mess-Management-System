@@ -1,5 +1,5 @@
 /**
- * Seed Script — Creates default Admin and Manager accounts
+ * Seed Script — Creates default Admin, Manager, and Student accounts
  *
  * Run once with:
  *   node seed.js
@@ -22,20 +22,38 @@ const seedUsers = [
     role: 'admin',
   },
   {
-    name: 'Mess Manager - M01',
+    name: 'Hostel Manager - H01',
     email: 'manager1@mess.com',
     password: 'Manager@1234',
     role: 'manager',
-    messId: 'M01',
+    hostelId: 'H01',
     contactNumber: '9876543210',
   },
   {
-    name: 'Mess Manager - M02',
+    name: 'Hostel Manager - H02',
     email: 'manager2@mess.com',
     password: 'Manager@1234',
     role: 'manager',
-    messId: 'M02',
+    hostelId: 'H02',
     contactNumber: '9876543211',
+  },
+  {
+    name: 'Student One',
+    email: 'student1@mess.com',
+    password: 'Student@1234',
+    role: 'student',
+    registrationNumber: 'STU-2025-001',
+    hostelId: 'H01',
+    contactNumber: '9000000001',
+  },
+  {
+    name: 'Student Two',
+    email: 'student2@mess.com',
+    password: 'Student@1234',
+    role: 'student',
+    registrationNumber: 'STU-2025-002',
+    hostelId: 'H01',
+    contactNumber: '9000000002',
   },
 ];
 
@@ -59,9 +77,11 @@ const seed = async () => {
 
     console.log('\n🎉 Seeding complete!\n');
     console.log('─────────────────────────────────────────');
-    console.log('  Admin    → admin@mess.com     / Admin@1234');
-    console.log('  Manager1 → manager1@mess.com  / Manager@1234  (messId: M01)');
-    console.log('  Manager2 → manager2@mess.com  / Manager@1234  (messId: M02)');
+    console.log('  Admin    → admin@mess.com       / Admin@1234');
+    console.log('  Manager1 → manager1@mess.com    / Manager@1234  (hostelId: H01)');
+    console.log('  Manager2 → manager2@mess.com    / Manager@1234  (hostelId: H02)');
+    console.log('  Student1 → student1@mess.com    / Student@1234  (hostelId: H01)');
+    console.log('  Student2 → student2@mess.com    / Student@1234  (hostelId: H01)');
     console.log('─────────────────────────────────────────');
 
   } catch (err) {

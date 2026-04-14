@@ -16,7 +16,7 @@ export default function ManageMenus() {
 
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");
-  const messId = storedUser?.messId;
+  const hostelId = storedUser?.hostelId;
 
   //   backend menu into form
   const formatMenu = (menuData) => {
@@ -37,7 +37,7 @@ export default function ManageMenus() {
       try {
         setLoading(true);
         const res = await axios.get(
-          `${API_BASE_URL}/api/menu/mess/${messId}`,
+          `${API_BASE_URL}/api/menu/mess/${hostelId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setMenus(res.data.data);
@@ -69,7 +69,7 @@ export default function ManageMenus() {
     const fetchPreviousMenu = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/menu/previous/${messId}`,
+          `${API_BASE_URL}/api/menu/previous/${hostelId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setWeeklyMenu(formatMenu(response.data.data));
@@ -86,8 +86,8 @@ export default function ManageMenus() {
       }
     };
 
-    if (messId) fetchMenus();
-  }, [messId, refresh]);
+    if (hostelId) fetchMenus();
+  }, [hostelId, refresh]);
 
   // 🧾 Update form
   const handleChange = (day, meal, value) => {
@@ -125,7 +125,7 @@ export default function ManageMenus() {
       }));
 
       const payload = {
-        messId,
+        hostelId,
         weekStartDate: start,
         weekEndDate: end,
         weekNumber,

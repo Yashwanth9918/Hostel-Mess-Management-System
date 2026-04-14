@@ -8,9 +8,9 @@ export const generateBillValidation = [
     .isMongoId()
     .withMessage('Student ID must be a valid ID'),
 
-  body('messId')
+  body('hostelId')
     .notEmpty()
-    .withMessage('Mess ID is required'),
+    .withMessage('Hostel ID is required'),
 
   body('month')
     .isInt({ min: 1, max: 12 })
@@ -33,9 +33,9 @@ export const generateBillValidation = [
 
 // ── Generate all bills validation ────────────────────────────────
 export const generateAllBillsValidation = [
-  body('messId')
+  body('hostelId')
     .notEmpty()
-    .withMessage('Mess ID is required'),
+    .withMessage('Hostel ID is required'),
 
   body('month')
     .isInt({ min: 1, max: 12 })

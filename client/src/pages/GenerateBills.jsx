@@ -10,7 +10,7 @@ export default function GenerateBills() {
 
   const now = new Date();
   const [formData, setFormData] = useState({
-    messId: "",
+    hostelId: "",
     month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`, // proper YYYY-MM format
     dailyCost: "",
     extras: "",
@@ -37,8 +37,8 @@ export default function GenerateBills() {
   };
 
   const handleGenerate = async () => {
-    if (!formData.messId?.trim()) {
-      alert("Please enter Mess ID.");
+    if (!formData.hostelId?.trim()) {
+      alert("Please enter Hostel ID.");
       return;
     }
 
@@ -56,7 +56,7 @@ export default function GenerateBills() {
     const [year, month] = formData.month.split("-").map(Number);
 
     const payload = {
-      messId: formData.messId.trim(),
+      hostelId: formData.hostelId.trim(),
       month,
       year,
       mealRates: computeMealRates(totalPerDay),
@@ -107,15 +107,15 @@ export default function GenerateBills() {
 
         {/* Form */}
         <section className="bg-white border border-neutral-200 shadow-sm rounded-xl p-6 space-y-6">
-          {/* Mess ID */}
+          {/* Hostel ID */}
           <div>
-            <label className="text-sm text-neutral-600">Mess ID *</label>
+            <label className="text-sm text-neutral-600">Hostel ID *</label>
             <input
               type="text"
               className="w-full border border-neutral-300 rounded-lg p-2 mt-1 text-sm focus:ring-2 focus:ring-blue-600"
-              placeholder="Example: M01"
-              value={formData.messId}
-              onChange={(e) => handleChange("messId", e.target.value)}
+              placeholder="Example: H01"
+              value={formData.hostelId}
+              onChange={(e) => handleChange("hostelId", e.target.value)}
             />
           </div>
 

@@ -37,12 +37,6 @@ const UserSchema = new mongoose.Schema(
     hostelId: {
       type: String,
       required: function() {
-        return this.role === 'student';
-      },
-    },
-    messId: {
-      type: String,
-      required: function() {
         return this.role === 'student' || this.role === 'manager';
       },
     },

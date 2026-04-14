@@ -12,7 +12,7 @@ cron.schedule('1 0 * * *', async () => {
     yesterday.setDate(yesterday.getDate() - 1);
     yesterday.setHours(0, 0, 0, 0);
 
-    const students = await User.find({ role: 'student' }).select('_id messId');
+    const students = await User.find({ role: 'student' }).select('_id hostelId');
     for (const s of students) {
       const exists = await Attendance.findOne({ studentId: s._id, date: yesterday });
       if (exists) {
@@ -33,7 +33,7 @@ cron.schedule('1 0 * * *', async () => {
         // create a new attendance record marking present for all meals
         const newRec = new Attendance({
           studentId: s._id,
-          messId: s.messId,
+          hostelId: s.hostelId,
           date: yesterday,
           isOnLeave: false,
           meals: [

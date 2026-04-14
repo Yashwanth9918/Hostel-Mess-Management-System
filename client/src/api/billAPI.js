@@ -21,7 +21,7 @@ export const markBillsAsPaid = async (billIds) => {
 export const getTotalStudentCount = async () => {
   const token = localStorage.getItem("token");
   return axios.get(
-    `${BASE}/api/bills/students-count`,
+    `${API_BASE_URL}/api/bills/students-count`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
 };
@@ -30,7 +30,7 @@ export const getTotalStudentCount = async () => {
 export const getAllBillsStats = async () => {
   const token = localStorage.getItem("token");
   return axios.get(
-    `${BASE}/api/bills/stats-all`,
+    `${API_BASE_URL}/api/bills/stats-all`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
 };
@@ -44,17 +44,17 @@ export const generateAllBills = async (payload) => {
   return axios.post(`${API}/generate-all`, payload, authHeaders());
 };
 
-// Admin/Manager: Get bills for a mess (server: GET /api/bills/mess/:messId)
-export const getMessBills = async (messId, params = {}) => {
+// Admin/Manager: Get bills for a mess (server: GET /api/bills/mess/:hostelId)
+export const getMessBills = async (hostelId, params = {}) => {
   const qs = new URLSearchParams(params).toString();
-  const url = `${API}/mess/${messId}${qs ? `?${qs}` : ""}`;
+  const url = `${API}/mess/${hostelId}${qs ? `?${qs}` : ""}`;
   return axios.get(url, authHeaders());
 };
 
 // Get billing stats for admin dashboard
-export const getBillingStats = async (messId) => {
-  if (!messId) {
-    throw new Error('MessId is required for getting billing stats');
+export const getBillingStats = async (hostelId) => {
+  if (!hostelId) {
+    throw new Error('hostelId is required for getting billing stats');
   }
   
   // Get current month and year
@@ -62,6 +62,6 @@ export const getBillingStats = async (messId) => {
   const month = today.getMonth() + 1; // getMonth returns 0-11
   const year = today.getFullYear();
   
-  return axios.get(`${API}/summary/${messId}/${month}/${year}`, authHeaders());
+  return axios.get(`${API}/summary/${hostelId}/${month}/${year}`, authHeaders());
 
 };

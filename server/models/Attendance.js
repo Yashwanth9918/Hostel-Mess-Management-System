@@ -38,9 +38,9 @@ const AttendanceSchema = new mongoose.Schema(
       required: [true, 'Student ID is required'],
       index: true,
     },
-    messId: {
+    hostelId: {
       type: String,
-      required: [true, 'Mess ID is required'],
+      required: [true, 'Hostel ID is required'],
       index: true,
     },
     date: {
@@ -104,8 +104,8 @@ const AttendanceSchema = new mongoose.Schema(
 // INDEXES
 // =======================
 AttendanceSchema.index({ studentId: 1, date: 1 }, { unique: true });
-AttendanceSchema.index({ messId: 1, date: 1 });
-AttendanceSchema.index({ studentId: 1, date: 1, messId: 1 });
+AttendanceSchema.index({ hostelId: 1, date: 1 });
+AttendanceSchema.index({ studentId: 1, date: 1, hostelId: 1 });
 AttendanceSchema.index({ date: 1, isOnLeave: 1 });
 
 // =======================
@@ -207,7 +207,7 @@ AttendanceSchema.statics.getAttendanceSummary = async function (studentId, month
 // 4️⃣ Improved leave registration with overlap validation
 AttendanceSchema.statics.registerLeave = async function (
   studentId,
-  messId,
+  hostelId,
   startDate,
   endDate,
   reason,
@@ -267,7 +267,7 @@ AttendanceSchema.statics.registerLeave = async function (
       existing ||
       new this({
         studentId,
-        messId,
+        hostelId,
         date: dateOnly,
       });
 
@@ -287,13 +287,13 @@ AttendanceSchema.statics.registerLeave = async function (
 
 
 // 5️⃣ Mess-wise attendance
-AttendanceSchema.statics.getMessAttendance = async function (messId, date) {
+AttendanceSchema.statics.getMessAttendance = async function (hostelId, date) {
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
   const endOfDay = new Date(date);
   endOfDay.setHours(23, 59, 59, 999);
   return await this.find({
-    messId,
+    hostelId,
     date: { $gte: startOfDay, $lte: endOfDay },
   })
     .populate('studentId', 'name registrationNumber hostelId')

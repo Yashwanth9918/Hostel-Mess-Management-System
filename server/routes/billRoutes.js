@@ -40,10 +40,10 @@ router.put('/mark-paid', protect, markBillsPaidValidation, validate, markBillsAs
 // ── Manager and Admin routes ─────────────────────────────────────
 router.get('/stats-all', protect, authorize('admin'), getAllBillsStats);
 router.get('/stats-all/:month/:year', protect, authorize('admin'), getAllBillsStats);
-router.get('/mess/:messId', protect, authorize('manager', 'admin'), getMessBills);
-router.get('/unpaid/:messId', protect, authorize('manager', 'admin'), getUnpaidBills);
-router.get('/overdue/:messId', protect, authorize('manager', 'admin'), getOverdueBills);
-router.get('/summary/:messId/:month/:year', protect, authorize('manager', 'admin'), billingSummaryValidation, validate, getBillingSummary);
+router.get('/mess/:hostelId', protect, authorize('manager', 'admin'), getMessBills);
+router.get('/unpaid/:hostelId', protect, authorize('manager', 'admin'), getUnpaidBills);
+router.get('/overdue/:hostelId', protect, authorize('manager', 'admin'), getOverdueBills);
+router.get('/summary/:hostelId/:month/:year', protect, authorize('manager', 'admin'), billingSummaryValidation, validate, getBillingSummary);
 router.post('/:id/payment', protect, authorize('manager', 'admin'), addPaymentValidation, validate, addPayment);
 router.get('/students-count', protect, authorize('admin'), getStudentsCount);
 

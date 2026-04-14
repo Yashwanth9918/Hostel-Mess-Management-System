@@ -18,19 +18,19 @@ export const createMenu = asyncHandler(async (req, res) => {
 });
 
 // @desc    Get current week menu
-// @route   GET /api/menu/current/:messId
+// @route   GET /api/menu/current/:hostelId
 // @access  Public
 export const getCurrentMenu = asyncHandler(async (req, res) => {
-  const menu = await menuService.getCurrentMenu(req.params.messId);
+  const menu = await menuService.getCurrentMenu(req.params.hostelId);
   sendSuccess(res, menu);
 });
 
 // @desc    Get menu for specific date
-// @route   GET /api/menu/date/:messId/:date
+// @route   GET /api/menu/date/:hostelId/:date
 // @access  Public
 export const getMenuByDate = asyncHandler(async (req, res) => {
-  const { messId, date } = req.params;
-  const result = await menuService.getMenuByDate(messId, date);
+  const { hostelId, date } = req.params;
+  const result = await menuService.getMenuByDate(hostelId, date);
   sendSuccess(res, result);
 });
 
@@ -59,20 +59,20 @@ export const deleteMenu = asyncHandler(async (req, res) => {
 });
 
 // @desc    Get all menus for a mess (with pagination)
-// @route   GET /api/menu/mess/:messId
+// @route   GET /api/menu/mess/:hostelId
 // @access  Private
 export const getAllMenusForMess = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
 
-  const result = await menuService.getAllMenusForMess(req.params.messId, { page, limit });
+  const result = await menuService.getAllMenusForMess(req.params.hostelId, { page, limit });
   sendPaginated(res, result.menus, result.page, result.limit, result.total);
 });
 
 // @desc    Get previous week's published menu
-// @route   GET /api/menu/previous/:messId
+// @route   GET /api/menu/previous/:hostelId
 // @access  Public
 export const getPreviousMenu = asyncHandler(async (req, res) => {
-  const menu = await menuService.getPreviousMenu(req.params.messId);
+  const menu = await menuService.getPreviousMenu(req.params.hostelId);
   sendSuccess(res, menu);
 });

@@ -17,9 +17,9 @@ import { createMenuValidation, updateMenuValidation } from '../validators/menuVa
 const router = express.Router();
 
 // ── Public routes ────────────────────────────────────────────────
-router.get('/current/:messId', getCurrentMenu);
-router.get('/previous/:messId', getPreviousMenu);
-router.get('/date/:messId/:date', getMenuByDate);
+router.get('/current/:hostelId', getCurrentMenu);
+router.get('/previous/:hostelId', getPreviousMenu);
+router.get('/date/:hostelId/:date', getMenuByDate);
 
 // ── Protected routes — Manager/Admin only ────────────────────────
 router.post('/', protect, authorize('manager', 'admin'), createMenuValidation, validate, createMenu);
@@ -28,6 +28,6 @@ router.put('/:id/publish', protect, authorize('manager', 'admin'), publishMenu);
 router.delete('/:id', protect, authorize('manager', 'admin'), deleteMenu);
 
 // ── Protected routes — All authenticated users ───────────────────
-router.get('/mess/:messId', protect, getAllMenusForMess);
+router.get('/mess/:hostelId', protect, getAllMenusForMess);
 
 export default router;

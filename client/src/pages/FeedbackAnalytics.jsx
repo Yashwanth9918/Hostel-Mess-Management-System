@@ -5,6 +5,7 @@ import StatBadge from "../components/StatBadge.jsx";
 import { Star, Users, TrendingUp, X } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api.js";
 
 export default function FeedbackAnalytics() {
   const [sidebarOpen, setSidebarOpen] = useState(false);

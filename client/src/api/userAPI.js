@@ -3,10 +3,10 @@ import { API_BASE_URL } from "../config/api.js";
 
 const BASE_URL = API_BASE_URL;
 
-export const getStudentCount = async (messId) => {
+export const getStudentCount = async (hostelId) => {
   const token = localStorage.getItem("token");
   return await axios.get(`${BASE_URL}/api/users/count`, {
-    params: { messId },
+    params: { hostelId },
     headers: { Authorization: `Bearer ${token}` },
   });
 };

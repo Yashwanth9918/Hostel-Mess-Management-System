@@ -114,11 +114,11 @@ export const markBillsAsPaid = async (userId, billIds) => {
 /**
  * Generate a bill for a single student.
  */
-export const generateBill = async (userId, { studentId, messId, month, year, mealRates, fixedCharges }) => {
+export const generateBill = async (userId, { studentId, hostelId, month, year, mealRates, fixedCharges }) => {
   const rates = mealRates || DEFAULT_MEAL_RATES;
   const fixed = fixedCharges || DEFAULT_FIXED_CHARGES;
 
-  const bill = await Bill.generateFromAttendance(studentId, messId, month, year, rates, fixed, userId);
+  const bill = await Bill.generateFromAttendance(studentId, hostelId, month, year, rates, fixed, userId);
 
   // Ensure rounding
   const doc = await Bill.findById(bill._id);
@@ -136,18 +136,18 @@ export const generateBill = async (userId, { studentId, messId, month, year, mea
 /**
  * Generate bills for all students in a mess.
  */
-export const generateAllBills = async (userId, { messId, month, year, mealRates, fixedCharges }) => {
+export const generateAllBills = async (userId, { hostelId, month, year, mealRates, fixedCharges }) => {
   const rates = mealRates || DEFAULT_MEAL_RATES;
   const fixed = fixedCharges || DEFAULT_FIXED_CHARGES;
 
-  const students = await User.find({ messId, role: 'student', isActive: true });
+  const students = await User.find({ hostelId, role: 'student', isActive: true });
 
   const generatedBills = [];
   const errors = [];
 
   for (const student of students) {
     try {
-      const bill = await Bill.generateFromAttendance(student._id, messId, month, year, rates, fixed, userId);
+      const bill = await Bill.generateFromAttendance(student._id, hostelId, month, year, rates, fixed, userId);
 
       const doc = await Bill.findById(bill._id);
       await ensureRoundedTotal(doc);
@@ -199,7 +199,7 @@ export const getMyBills = async (userId, { year, paymentStatus, page = 1, limit 
  */
 export const getBillById = async (user, billId) => {
   const bill = await Bill.findById(billId)
-    .populate('studentId', 'name email registrationNumber hostelId messId')
+    .populate('studentId', 'name email registrationNumber hostelId')
     .populate('generatedBy', 'name email')
     .populate('paymentHistory.receivedBy', 'name email');
 
@@ -213,25 +213,25 @@ export const getBillById = async (user, billId) => {
   }
 
   // Managers can only view bills for their mess
-  if (user.role === 'manager' && bill.messId !== user.messId) {
-    throw new AppError('You can only view bills for your assigned mess', 403);
+  if (user.role === 'manager' && bill.hostelId !== user.hostelId) {
+    throw new AppError('You can only view bills for your assigned hostel', 403);
   }
 
   return bill;
 };
 
 /**
- * Get all bills for a mess (paginated).
+ * Get all bills for a hostel (paginated).
  */
-export const getMessBills = async (user, messId, filters) => {
-  if (user.role === 'manager' && user.messId !== messId) {
-    throw new AppError('You can only view bills for your assigned mess', 403);
+export const getMessBills = async (user, hostelId, filters) => {
+  if (user.role === 'manager' && user.hostelId !== hostelId) {
+    throw new AppError('You can only view bills for your assigned hostel', 403);
   }
 
   const { month, year, paymentStatus, studentId, page = 1, limit = 20 } = filters;
   const skip = (page - 1) * limit;
 
-  const query = { messId, isActive: true, isCancelled: false };
+  const query = { hostelId, isActive: true, isCancelled: false };
 
   if (month) query.month = parseInt(month);
   if (year) query.year = parseInt(year);
@@ -250,25 +250,25 @@ export const getMessBills = async (user, messId, filters) => {
 };
 
 /**
- * Get unpaid bills for a mess.
+ * Get unpaid bills for a hostel.
  */
-export const getUnpaidBills = async (user, messId) => {
-  if (user.role === 'manager' && user.messId !== messId) {
-    throw new AppError('You can only view bills for your assigned mess', 403);
+export const getUnpaidBills = async (user, hostelId) => {
+  if (user.role === 'manager' && user.hostelId !== hostelId) {
+    throw new AppError('You can only view bills for your assigned hostel', 403);
   }
 
-  return await Bill.getUnpaidBills(messId);
+  return await Bill.getUnpaidBills(hostelId);
 };
 
 /**
- * Get overdue bills for a mess.
+ * Get overdue bills for a hostel.
  */
-export const getOverdueBills = async (user, messId) => {
-  if (user.role === 'manager' && user.messId !== messId) {
-    throw new AppError('You can only view bills for your assigned mess', 403);
+export const getOverdueBills = async (user, hostelId) => {
+  if (user.role === 'manager' && user.hostelId !== hostelId) {
+    throw new AppError('You can only view bills for your assigned hostel', 403);
   }
 
-  return await Bill.getOverdueBills(messId);
+  return await Bill.getOverdueBills(hostelId);
 };
 
 /**
@@ -281,8 +281,8 @@ export const addPayment = async (user, billId, { amount, paymentMethod, transact
     throw new AppError('Bill not found', 404);
   }
 
-  if (user.role === 'manager' && bill.messId !== user.messId) {
-    throw new AppError('You can only process payments for your assigned mess', 403);
+  if (user.role === 'manager' && bill.hostelId !== user.hostelId) {
+    throw new AppError('You can only process payments for your assigned hostel', 403);
   }
 
   if (amount > bill.amountDue) {
@@ -348,14 +348,14 @@ export const cancelBill = async (userId, billId, reason) => {
 };
 
 /**
- * Get billing summary for a mess/month/year.
+ * Get billing summary for a hostel/month/year.
  */
-export const getBillingSummary = async (user, messId, month, year) => {
-  if (user.role === 'manager' && user.messId !== messId) {
-    throw new AppError('You can only view summary for your assigned mess', 403);
+export const getBillingSummary = async (user, hostelId, month, year) => {
+  if (user.role === 'manager' && user.hostelId !== hostelId) {
+    throw new AppError('You can only view summary for your assigned hostel', 403);
   }
 
-  const summary = await Bill.getBillingSummary(messId, parseInt(month), parseInt(year));
+  const summary = await Bill.getBillingSummary(hostelId, parseInt(month), parseInt(year));
 
   if (!summary) {
     throw new AppError('No billing data found for the specified period', 404);

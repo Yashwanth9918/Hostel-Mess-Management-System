@@ -87,9 +87,9 @@ const DailyMenuSchema = new mongoose.Schema(
 // Main Menu Schema
 const MenuSchema = new mongoose.Schema(
   {
-    messId: {
+    hostelId: {
       type: String,
-      required: [true, 'Mess ID is required'],
+      required: [true, 'Hostel ID is required'],
       index: true,
     },
     weekStartDate: {
@@ -146,8 +146,8 @@ const MenuSchema = new mongoose.Schema(
 );
 
 // Indexes for better query performance
-MenuSchema.index({ messId: 1, weekStartDate: 1 });
-MenuSchema.index({ messId: 1, status: 1, isActive: 1 });
+MenuSchema.index({ hostelId: 1, weekStartDate: 1 });
+MenuSchema.index({ hostelId: 1, status: 1, isActive: 1 });
 MenuSchema.index({ weekStartDate: 1, weekEndDate: 1 });
 
 // Validate that weekEndDate is after weekStartDate
@@ -178,10 +178,10 @@ MenuSchema.methods.getMenuForDate = function (date) {
 };
 
 // Static method to get current week menu for a mess
-MenuSchema.statics.getCurrentWeekMenu = async function (messId) {
+MenuSchema.statics.getCurrentWeekMenu = async function (hostelId) {
   const today = new Date();
   return await this.findOne({
-    messId,
+    hostelId,
     weekStartDate: { $lte: today },
     weekEndDate: { $gte: today },
     status: 'published',
@@ -190,10 +190,10 @@ MenuSchema.statics.getCurrentWeekMenu = async function (messId) {
 };
 
 // Static method to get upcoming menu
-MenuSchema.statics.getUpcomingMenu = async function (messId) {
+MenuSchema.statics.getUpcomingMenu = async function (hostelId) {
   const today = new Date();
   return await this.findOne({
-    messId,
+    hostelId,
     weekStartDate: { $gt: today },
     status: 'published',
     isActive: true,

@@ -14,7 +14,6 @@ export default function SignUp() {
     role: "student", // must match backend expectation (lowercase)
     registrationNumber: "",
     hostelId: "",
-    messId: "",
     contactNumber: "",
   });
 
@@ -166,19 +165,6 @@ export default function SignUp() {
               />
             </div>
 
-            {/* Mess ID */}
-            <div>
-              <label className="text-sm text-neutral-700">Mess ID</label>
-              <input
-                name="messId"
-                type="text"
-                required
-                value={form.messId}
-                onChange={handleChange}
-                className="mt-1 w-full rounded-xl border border-neutral-300 p-3 text-sm focus:ring-2 focus:ring-blue-600"
-                placeholder="M01"
-              />
-            </div>
 
             {/* Contact Number */}
             <div>

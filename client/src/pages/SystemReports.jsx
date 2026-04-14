@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Navbar from "../components/Navbar.jsx";
-import Sidebar from "../components/Sidebar.jsx";
+import Sidebar from "../components/Sidebar3.jsx";
 import StatBadge from "../components/StatBadge.jsx";
 import {
   ResponsiveContainer,

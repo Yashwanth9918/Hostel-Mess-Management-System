@@ -13,7 +13,7 @@ const VALID_ROLES = ['student', 'manager', 'admin'];
  * Get all users (admin).
  */
 export const getAllUsers = async () => {
-  return await User.find().select('name email role messId');
+  return await User.find().select('name email role hostelId');
 };
 
 /**
@@ -28,7 +28,7 @@ export const updateUserRole = async (userId, role) => {
     userId,
     { role },
     { new: true }
-  ).select('name email role messId');
+  ).select('name email role hostelId');
 
   if (!user) {
     throw new AppError('User not found', 404);
@@ -38,11 +38,11 @@ export const updateUserRole = async (userId, role) => {
 };
 
 /**
- * Get student count (optionally by messId).
+ * Get student count (optionally by hostelId).
  */
-export const getStudentCount = async (messId) => {
+export const getStudentCount = async (hostelId) => {
   const query = { role: 'student' };
-  if (messId) query.messId = messId;
+  if (hostelId) query.hostelId = hostelId;
 
   const totalStudents = await User.countDocuments(query);
   return { totalStudents };

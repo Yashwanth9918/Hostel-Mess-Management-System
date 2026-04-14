@@ -57,7 +57,7 @@ export const getMessFeedbacks = asyncHandler(async (req, res) => {
 // @route   GET /api/feedback/pending
 // @access  Private (Manager/Admin)
 export const getPendingFeedbacks = asyncHandler(async (req, res) => {
-  const feedbacks = await feedbackService.getPendingFeedbacks(req.user, req.query.messId);
+  const feedbacks = await feedbackService.getPendingFeedbacks(req.user, req.query.hostelId);
   sendSuccess(res, feedbacks);
 });
 

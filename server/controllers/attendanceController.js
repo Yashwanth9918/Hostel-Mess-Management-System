@@ -15,7 +15,7 @@ import * as attendanceService from '../services/attendanceService.js';
 export const markAttendance = asyncHandler(async (req, res) => {
   const result = await attendanceService.markAttendance(
     req.user._id,
-    req.user.messId,
+    req.user.hostelId,
     req.body
   );
 
@@ -34,7 +34,7 @@ export const markAttendance = asyncHandler(async (req, res) => {
 export const registerLeave = asyncHandler(async (req, res) => {
   const attendanceRecords = await attendanceService.registerLeave(
     req.user._id,
-    req.user.messId,
+    req.user.hostelId,
     req.body
   );
 
@@ -84,11 +84,11 @@ export const getAttendanceSummary = asyncHandler(async (req, res) => {
 });
 
 // @desc    Get mess-wise attendance for a date
-// @route   GET /api/attendance/mess/:messId/:date
+// @route   GET /api/attendance/mess/:hostelId/:date
 // @access  Private (Manager/Admin only)
 export const getMessAttendance = asyncHandler(async (req, res) => {
-  const { messId, date } = req.params;
-  const result = await attendanceService.getMessAttendance(req.user, messId, date);
+  const { hostelId, date } = req.params;
+  const result = await attendanceService.getMessAttendance(req.user, hostelId, date);
 
   sendSuccess(res, result);
 });

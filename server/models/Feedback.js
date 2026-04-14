@@ -46,9 +46,9 @@ const FeedbackSchema = new mongoose.Schema(
       required: [true, 'Student ID is required'],
       index: true,
     },
-    messId: {
+    hostelId: {
       type: String,
-      required: [true, 'Mess ID is required'],
+      required: [true, 'Hostel ID is required'],
       index: true,
     },
     date: {
@@ -148,8 +148,8 @@ const FeedbackSchema = new mongoose.Schema(
 
 // Compound indexes for better query performance
 FeedbackSchema.index({ studentId: 1, date: 1, mealType: 1 });
-FeedbackSchema.index({ messId: 1, date: 1 });
-FeedbackSchema.index({ messId: 1, status: 1 });
+FeedbackSchema.index({ hostelId: 1, date: 1 });
+FeedbackSchema.index({ hostelId: 1, status: 1 });
 FeedbackSchema.index({ overallRating: 1, date: -1 });
 FeedbackSchema.index({ status: 1, priority: -1 });
 
@@ -205,11 +205,11 @@ FeedbackSchema.methods.removeUpvote = function (userId) {
 };
 
 // Static method to get average ratings for a mess
-FeedbackSchema.statics.getAverageRatings = async function (messId, startDate, endDate) {
+FeedbackSchema.statics.getAverageRatings = async function (hostelId, startDate, endDate) {
   const result = await this.aggregate([
     {
       $match: {
-        messId,
+        hostelId,
         date: { $gte: startDate, $lte: endDate },
       },
     },
@@ -231,11 +231,11 @@ FeedbackSchema.statics.getAverageRatings = async function (messId, startDate, en
 };
 
 // Static method to get meal-wise ratings
-FeedbackSchema.statics.getMealWiseRatings = async function (messId, startDate, endDate) {
+FeedbackSchema.statics.getMealWiseRatings = async function (hostelId, startDate, endDate) {
   return await this.aggregate([
     {
       $match: {
-        messId,
+        hostelId,
         date: { $gte: startDate, $lte: endDate },
       },
     },
@@ -253,11 +253,11 @@ FeedbackSchema.statics.getMealWiseRatings = async function (messId, startDate, e
 };
 
 // Static method to get rating distribution
-FeedbackSchema.statics.getRatingDistribution = async function (messId, startDate, endDate) {
+FeedbackSchema.statics.getRatingDistribution = async function (hostelId, startDate, endDate) {
   return await this.aggregate([
     {
       $match: {
-        messId,
+        hostelId,
         date: { $gte: startDate, $lte: endDate },
       },
     },
@@ -274,9 +274,9 @@ FeedbackSchema.statics.getRatingDistribution = async function (messId, startDate
 };
 
 // Static method to get top issues/complaints
-FeedbackSchema.statics.getTopIssues = async function (messId, startDate, endDate, limit = 10) {
+FeedbackSchema.statics.getTopIssues = async function (hostelId, startDate, endDate, limit = 10) {
   return await this.find({
-    messId,
+    hostelId,
     date: { $gte: startDate, $lte: endDate },
     overallRating: { $lte: 3 },
   })
@@ -287,9 +287,9 @@ FeedbackSchema.statics.getTopIssues = async function (messId, startDate, endDate
 };
 
 // Static method to get pending feedbacks
-FeedbackSchema.statics.getPendingFeedbacks = async function (messId) {
+FeedbackSchema.statics.getPendingFeedbacks = async function (hostelId) {
   return await this.find({
-    messId,
+    hostelId,
     status: 'pending',
   })
     .sort({ priority: -1, createdAt: 1 })
@@ -297,15 +297,15 @@ FeedbackSchema.statics.getPendingFeedbacks = async function (messId) {
 };
 
 // Static method to get consolidated feedback report
-FeedbackSchema.statics.getConsolidatedReport = async function (messId, month, year) {
+FeedbackSchema.statics.getConsolidatedReport = async function (hostelId, month, year) {
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0, 23, 59, 59);
   
   const [avgRatings, mealWise, distribution, topIssues] = await Promise.all([
-    this.getAverageRatings(messId, startDate, endDate),
-    this.getMealWiseRatings(messId, startDate, endDate),
-    this.getRatingDistribution(messId, startDate, endDate),
-    this.getTopIssues(messId, startDate, endDate, 5),
+    this.getAverageRatings(hostelId, startDate, endDate),
+    this.getMealWiseRatings(hostelId, startDate, endDate),
+    this.getRatingDistribution(hostelId, startDate, endDate),
+    this.getTopIssues(hostelId, startDate, endDate, 5),
   ]);
   
   return {

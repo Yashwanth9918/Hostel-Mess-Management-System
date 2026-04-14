@@ -25,10 +25,10 @@ export const updateUserRole = asyncHandler(async (req, res) => {
   sendSuccess(res, user, 'User role updated successfully');
 });
 
-// @desc    Get total student count (optionally by messId)
+// @desc    Get total student count (optionally by hostelId)
 // @route   GET /api/users/count
 // @access  Admin or Manager
 export const getStudentCount = asyncHandler(async (req, res) => {
-  const data = await userService.getStudentCount(req.query.messId);
+  const data = await userService.getStudentCount(req.query.hostelId);
   sendSuccess(res, data);
 });

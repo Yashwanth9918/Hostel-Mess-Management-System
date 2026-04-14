@@ -47,10 +47,10 @@ export const registerValidation = [
     .matches(/^[0-9]{10}$/)
     .withMessage('Contact number must be a valid 10-digit number'),
 
-  body('messId')
+  body('hostelId')
     .if(body('role').isIn(['student', 'manager']))
     .notEmpty()
-    .withMessage('Mess ID is required for students and managers'),
+    .withMessage('Hostel ID is required for students and managers'),
 ];
 
 // ── Login validation rules ───────────────────────────────────────

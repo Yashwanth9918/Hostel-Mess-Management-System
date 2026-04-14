@@ -26,7 +26,7 @@ export const submitFeedback = async (user, feedbackData) => {
 
   const feedback = await Feedback.create({
     studentId: user._id,
-    messId: user.messId,
+    hostelId: user.hostelId,
     date,
     mealType,
     overallRating,
@@ -92,29 +92,29 @@ export const getMyFeedback = async (userId, { startDate, endDate, page = 1, limi
 /**
  * Get consolidated feedback report.
  */
-export const getConsolidatedFeedback = async (user, { messId, month, year }) => {
-  const targetMessId = messId || user.messId;
+export const getConsolidatedFeedback = async (user, { hostelId, month, year }) => {
+  const targethostelId = hostelId || user.hostelId;
 
-  if (user.role === 'manager' && user.messId !== targetMessId) {
-    throw new AppError('You can only view feedback for your assigned mess', 403);
+  if (user.role === 'manager' && user.hostelId !== targethostelId) {
+    throw new AppError('You can only view feedback for your assigned hostel', 403);
   }
 
-  return await Feedback.getConsolidatedReport(targetMessId, parseInt(month), parseInt(year));
+  return await Feedback.getConsolidatedReport(targethostelId, parseInt(month), parseInt(year));
 };
 
 /**
- * Get all feedbacks for a mess (paginated, filtered).
+ * Get all feedbacks for a hostel (paginated, filtered).
  */
 export const getMessFeedbacks = async (user, filters) => {
-  const { messId, status, mealType, startDate, endDate, minRating, maxRating, page = 1, limit = 20 } = filters;
-  const targetMessId = messId || user.messId;
+  const { hostelId, status, mealType, startDate, endDate, minRating, maxRating, page = 1, limit = 20 } = filters;
+  const targethostelId = hostelId || user.hostelId;
   const skip = (page - 1) * limit;
 
-  if (user.role === 'manager' && user.messId !== targetMessId) {
-    throw new AppError('You can only view feedback for your assigned mess', 403);
+  if (user.role === 'manager' && user.hostelId !== targethostelId) {
+    throw new AppError('You can only view feedback for your assigned hostel', 403);
   }
 
-  const query = { messId: targetMessId };
+  const query = { hostelId: targethostelId };
 
   if (status) query.status = status;
   if (mealType) query.mealType = mealType;
@@ -139,16 +139,16 @@ export const getMessFeedbacks = async (user, filters) => {
 };
 
 /**
- * Get pending feedbacks for a mess.
+ * Get pending feedbacks for a hostel.
  */
-export const getPendingFeedbacks = async (user, queryMessId) => {
-  const messId = queryMessId || user.messId;
+export const getPendingFeedbacks = async (user, queryhostelId) => {
+  const hostelId = queryhostelId || user.hostelId;
 
-  if (user.role === 'manager' && user.messId !== messId) {
-    throw new AppError('You can only view feedback for your assigned mess', 403);
+  if (user.role === 'manager' && user.hostelId !== hostelId) {
+    throw new AppError('You can only view feedback for your assigned hostel', 403);
   }
 
-  return await Feedback.getPendingFeedbacks(messId);
+  return await Feedback.getPendingFeedbacks(hostelId);
 };
 
 /**
@@ -161,8 +161,8 @@ export const addManagerResponse = async (user, feedbackId, { response, actionTak
     throw new AppError('Feedback not found', 404);
   }
 
-  if (user.role === 'manager' && user.messId !== feedback.messId) {
-    throw new AppError('You can only respond to feedback for your assigned mess', 403);
+  if (user.role === 'manager' && user.hostelId !== feedback.hostelId) {
+    throw new AppError('You can only respond to feedback for your assigned hostel', 403);
   }
 
   feedback.addManagerResponse(user._id, response, actionTaken);
@@ -188,8 +188,8 @@ export const updateFeedbackStatus = async (user, feedbackId, status) => {
     throw new AppError('Feedback not found', 404);
   }
 
-  if (user.role === 'manager' && user.messId !== feedback.messId) {
-    throw new AppError('You can only update feedback for your assigned mess', 403);
+  if (user.role === 'manager' && user.hostelId !== feedback.hostelId) {
+    throw new AppError('You can only update feedback for your assigned hostel', 403);
   }
 
   feedback.status = status;
@@ -256,20 +256,20 @@ export const deleteFeedback = async (user, feedbackId) => {
 /**
  * Get feedback statistics.
  */
-export const getFeedbackStatistics = async (user, { messId, month, year }) => {
-  const targetMessId = messId || user.messId;
+export const getFeedbackStatistics = async (user, { hostelId, month, year }) => {
+  const targethostelId = hostelId || user.hostelId;
 
-  if (user.role === 'manager' && user.messId !== targetMessId) {
-    throw new AppError('You can only view statistics for your assigned mess', 403);
+  if (user.role === 'manager' && user.hostelId !== targethostelId) {
+    throw new AppError('You can only view statistics for your assigned hostel', 403);
   }
 
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0, 23, 59, 59);
 
   const [avgRatings, mealWise, distribution] = await Promise.all([
-    Feedback.getAverageRatings(targetMessId, startDate, endDate),
-    Feedback.getMealWiseRatings(targetMessId, startDate, endDate),
-    Feedback.getRatingDistribution(targetMessId, startDate, endDate),
+    Feedback.getAverageRatings(targethostelId, startDate, endDate),
+    Feedback.getMealWiseRatings(targethostelId, startDate, endDate),
+    Feedback.getRatingDistribution(targethostelId, startDate, endDate),
   ]);
 
   return {

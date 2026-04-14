@@ -33,7 +33,7 @@ router.get('/monthly/:month/:year', protect, monthlyAttendanceValidation, valida
 
 // ── Manager and Admin only routes ────────────────────────────────
 router.get('/summary/:studentId/:month/:year', protect, authorize('manager', 'admin'), getAttendanceSummary);
-router.get('/mess/:messId/:date', protect, authorize('manager', 'admin'), getMessAttendance);
+router.get('/mess/:hostelId/:date', protect, authorize('manager', 'admin'), getMessAttendance);
 router.put('/:id', protect, authorize('manager', 'admin'), updateAttendance);
 
 // ── Admin only routes ────────────────────────────────────────────

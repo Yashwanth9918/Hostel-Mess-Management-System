@@ -2,9 +2,9 @@ import { body, param } from 'express-validator';
 
 // ── Create menu validation ───────────────────────────────────────
 export const createMenuValidation = [
-  body('messId')
+  body('hostelId')
     .notEmpty()
-    .withMessage('Mess ID is required'),
+    .withMessage('Hostel ID is required'),
 
   body('weekStartDate')
     .notEmpty()

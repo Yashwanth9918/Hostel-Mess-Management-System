@@ -13,7 +13,8 @@ import {
   Utensils, 
   BarChart2, 
   ClipboardList, 
-  FilePieChart 
+  FilePieChart,
+  QrCode 
 } from "lucide-react";
 
 export default function MessManagerDashboard() {
@@ -157,6 +158,14 @@ export default function MessManagerDashboard() {
             title="Feedback Reports"
             description="Download monthly or weekly feedback reports."
             actions={<OutlineButton onClick={() => navigate("/feedback-reports")}>Generate Report</OutlineButton>}
+          />
+
+          {/* QR Code Generation */}
+          <Card
+            icon={<QrCode />}
+            title="Generate Meal QR"
+            description="Create and display unique QR codes for each meal session."
+            actions={<PrimaryButton onClick={() => navigate("/generate-qr")}>Generate QR</PrimaryButton>}
           />
         </section>
       </main>

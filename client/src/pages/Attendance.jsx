@@ -10,12 +10,14 @@ import {
 } from "../api/attendanceAPI.js";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { useNavigate } from "react-router-dom";
 
 export default function Attendance() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
 
   // action states
   // const [markingYesterday, setMarkingYesterday] = useState(false); // removed
@@ -93,29 +95,28 @@ export default function Attendance() {
     }
   };
 
-  // check yesterday status (kept for display only)
-  const getYesterdayStatus = () => {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    const normY = normalize(yesterday);
-
-    const found = attendanceHistory.find((e) => {
-      const d = normalize(e.date);
-      return d.getTime() === normY.getTime();
+  // Get today's meals from attendance history
+  const getTodayMeals = () => {
+    const today = normalize(new Date());
+    const todayRecord = attendanceHistory.find((e) => {
+      return normalize(e.date).getTime() === today.getTime();
     });
-
-    if (!found) return { exists: false, isOnLeave: false, present: false };
-    return {
-      exists: true,
-      isOnLeave: !!found.isOnLeave,
-      present: (found.totalMealsPresent || 0) > 0,
-    };
+    return todayRecord?.meals || [];
   };
 
-  if (loading) return <p className="text-center py-10">Loading attendance...</p>;
+  const todayMeals = getTodayMeals();
+  const allMeals = ["breakfast", "lunch", "dinner"];
+  const getMealIcon = (type) => {
+    switch (type) {
+      case "breakfast": return "🌅";
+      case "lunch": return "☀️";
+      case "dinner": return "🌙";
+      default: return "🍽️";
+    }
+  };
+  const isMealScanned = (type) => todayMeals.some((m) => m.mealType === type && m.isPresent);
 
-  // removed showMarkYesterday & mark yesterday UI/logic
+  if (loading) return <p className="text-center py-10">Loading attendance...</p>;
 
   return (
     <div className="min-h-screen font-sans">
@@ -127,14 +128,56 @@ export default function Attendance() {
         <header className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Attendance</h1>
           <p className="text-neutral-600 mt-1">
-            Apply for leave and view your daily attendance records.
+            Scan the mess QR code to mark your attendance, or apply for leave.
           </p>
         </header>
+
+        {/* Today's Meal Status */}
+        <section className="bg-white border border-neutral-200 shadow-sm rounded-xl p-5 mb-6">
+          <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-3">
+            Today's Meals
+          </h3>
+          <div className="grid grid-cols-3 gap-3">
+            {allMeals.map((meal) => {
+              const scanned = isMealScanned(meal);
+              return (
+                <div
+                  key={meal}
+                  className={`flex flex-col items-center p-3 rounded-xl border ${
+                    scanned
+                      ? "bg-green-50 border-green-200"
+                      : "bg-neutral-50 border-neutral-200"
+                  }`}
+                >
+                  <span className="text-2xl mb-1">{getMealIcon(meal)}</span>
+                  <span className="text-sm font-medium capitalize">{meal}</span>
+                  {scanned ? (
+                    <span className="text-xs text-green-600 font-medium mt-1">✅ Present</span>
+                  ) : (
+                    <span className="text-xs text-neutral-400 mt-1">Not scanned</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
 
         {/* Quick actions */}
         <div className="mb-6 flex justify-between items-center gap-4">
           <div />
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/scan-meal")}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors font-medium"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              Scan QR
+            </button>
             <PrimaryButton onClick={() => setShowModal(true)}>Apply for Leave</PrimaryButton>
           </div>
         </div>

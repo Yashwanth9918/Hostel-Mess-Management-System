@@ -7,7 +7,7 @@ const MealAttendanceSchema = new mongoose.Schema(
   {
     mealType: {
       type: String,
-      enum: ['breakfast', 'lunch', 'eveningSnacks', 'dinner'],
+      enum: ['breakfast', 'lunch', 'dinner'],
       required: true,
     },
     isPresent: {
@@ -79,13 +79,13 @@ const AttendanceSchema = new mongoose.Schema(
       type: Number,
       default: 0,
       min: 0,
-      max: 4,
+      max: 3,
     },
     totalMealsAbsent: {
       type: Number,
       default: 0,
       min: 0,
-      max: 4,
+      max: 3,
     },
     status: {
       type: String,
@@ -117,7 +117,7 @@ AttendanceSchema.pre('save', function (next) {
 
   if (this.isOnLeave) {
     this.totalMealsPresent = 0;
-    this.totalMealsAbsent = 4;
+    this.totalMealsAbsent = 3;
     this.meals = [];
   } else {
     this.totalMealsPresent = this.meals.filter((m) => m.isPresent).length;

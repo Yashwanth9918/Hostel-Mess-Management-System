@@ -20,6 +20,8 @@ import Help from "./pages/Help.jsx";
 import FeedbackReports from "./pages/FeedbackReports.jsx";
 import SystemReports from "./pages/SystemReports.jsx";
 import UserRoles from "./pages/UserRoles.jsx";
+import GenerateQR from "./pages/GenerateQR.jsx";
+import ScanMeal from "./pages/ScanMeal.jsx";
 
 
 
@@ -56,6 +58,8 @@ export default function App(){
       <Route path="/feedback-reports" element={<FeedbackReports />} />
       <Route path="/system-reports" element={<SystemReports />} />
       <Route path="/user-roles" element={<UserRoles />} />
+      <Route path="/generate-qr" element={<GenerateQR />} />
+      <Route path="/scan-meal" element={<ScanMeal />} />
 
 
 

@@ -23,7 +23,8 @@ import {
 const router = express.Router();
 
 // ── Student routes ───────────────────────────────────────────────
-router.post('/', protect, authorize('student'), markAttendanceValidation, validate, markAttendance);
+// NOTE: Manual attendance marking (POST /) removed — students now
+// scan QR codes via /api/meal-tokens/scan to mark attendance.
 router.post('/leave', protect, authorize('student'), registerLeaveValidation, validate, registerLeave);
 router.get('/my-attendance', protect, authorize('student'), getMyAttendanceValidation, validate, getMyAttendance);
 router.put('/cancel-leave/:id', protect, cancelLeave);

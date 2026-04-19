@@ -6,6 +6,7 @@ import {
   Utensils,
   FileText,
   LogOut,
+  QrCode,
 } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +15,7 @@ import { API_BASE_URL } from "../config/api.js";
 const NAV = [
   { icon: Home, label: "Dashboard", path: "/manager" },
   { icon: Utensils, label: "Manage Menus", path: "/manage-menus" },
+  { icon: QrCode, label: "Generate QR", path: "/generate-qr" },
   { icon: BarChart3, label: "Feedback Analytics", path: "/feedback-analytics" },
   { icon: ClipboardList, label: "Attendance Insights", path: "/attendance-insights" },
   { icon: FileText, label: "Feedback Reports", path: "/feedback-reports" },

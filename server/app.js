@@ -10,6 +10,7 @@ import feedbackRoutes from './routes/feedbackRoutes.js';
 import billRoutes from './routes/billRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+import mealTokenRoutes from './routes/mealTokenRoutes.js';
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/bills', billRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/meal-tokens', mealTokenRoutes);
 
 // ── Health check ─────────────────────────────────────────────────
 app.get('/', (req, res) => {

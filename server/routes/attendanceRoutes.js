@@ -6,6 +6,7 @@ import {
   getMonthlyAttendance,
   getAttendanceSummary,
   getMessAttendance,
+  getMessMonthlyAttendance,
   updateAttendance,
   deleteAttendance,
   cancelLeave,
@@ -35,6 +36,7 @@ router.get('/monthly/:month/:year', protect, monthlyAttendanceValidation, valida
 // ── Manager and Admin only routes ────────────────────────────────
 router.get('/summary/:studentId/:month/:year', protect, authorize('manager', 'admin'), getAttendanceSummary);
 router.get('/mess/:hostelId/:date', protect, authorize('manager', 'admin'), getMessAttendance);
+router.get('/mess-monthly/:hostelId/:month/:year', protect, authorize('manager', 'admin'), getMessMonthlyAttendance);
 router.put('/:id', protect, authorize('manager', 'admin'), updateAttendance);
 
 // ── Admin only routes ────────────────────────────────────────────

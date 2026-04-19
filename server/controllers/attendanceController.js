@@ -93,6 +93,16 @@ export const getMessAttendance = asyncHandler(async (req, res) => {
   sendSuccess(res, result);
 });
 
+// @desc    Get monthly attendance analytics for a hostel (aggregated)
+// @route   GET /api/attendance/mess-monthly/:hostelId/:month/:year
+// @access  Private (Manager/Admin only)
+export const getMessMonthlyAttendance = asyncHandler(async (req, res) => {
+  const { hostelId, month, year } = req.params;
+  const result = await attendanceService.getMessMonthlyStats(req.user, hostelId, month, year);
+
+  sendSuccess(res, result, 'Monthly attendance analytics retrieved');
+});
+
 // @desc    Update attendance (for managers/admin)
 // @route   PUT /api/attendance/:id
 // @access  Private (Manager/Admin only)

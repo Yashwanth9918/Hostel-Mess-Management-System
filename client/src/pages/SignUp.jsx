@@ -151,18 +151,26 @@ export default function SignUp() {
               />
             </div>
 
-            {/* Hostel ID */}
+            {/* Hostel */}
             <div>
-              <label className="text-sm text-neutral-700">Hostel ID</label>
-              <input
+              <label className="text-sm text-neutral-700">Hostel</label>
+              <select
                 name="hostelId"
-                type="text"
                 required
                 value={form.hostelId}
                 onChange={handleChange}
-                className="mt-1 w-full rounded-xl border border-neutral-300 p-3 text-sm focus:ring-2 focus:ring-blue-600"
-                placeholder="H01"
-              />
+                className="mt-1 w-full rounded-xl border border-neutral-300 p-3 text-sm focus:ring-2 focus:ring-blue-600 bg-white"
+              >
+                <option value="" disabled>Select your hostel</option>
+                <option value="BH-1">BH-1 (Boys Hostel 1)</option>
+                <option value="BH-2">BH-2 (Boys Hostel 2)</option>
+                <option value="BH-3">BH-3 (Boys Hostel 3)</option>
+                <option value="BH-4">BH-4 (Boys Hostel 4)</option>
+                <option value="BH-5">BH-5 (Boys Hostel 5)</option>
+                <option value="GH-1">GH-1 (Girls Hostel 1)</option>
+                <option value="GH-2">GH-2 (Girls Hostel 2)</option>
+                <option value="GH-3">GH-3 (Girls Hostel 3)</option>
+              </select>
             </div>
 
 

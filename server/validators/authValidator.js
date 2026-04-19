@@ -50,7 +50,9 @@ export const registerValidation = [
   body('hostelId')
     .if(body('role').isIn(['student', 'manager']))
     .notEmpty()
-    .withMessage('Hostel ID is required for students and managers'),
+    .withMessage('Hostel ID is required for students and managers')
+    .isIn(['BH-1', 'BH-2', 'BH-3', 'BH-4', 'BH-5', 'GH-1', 'GH-2', 'GH-3'])
+    .withMessage('Invalid hostel. Must be one of: BH-1, BH-2, BH-3, BH-4, BH-5, GH-1, GH-2, GH-3'),
 ];
 
 // ── Login validation rules ───────────────────────────────────────

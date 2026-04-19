@@ -22,37 +22,29 @@ const seedUsers = [
     role: 'admin',
   },
   {
-    name: 'Hostel Manager - H01',
+    name: 'Mess Manager — BH-1',
     email: 'manager1@mess.com',
     password: 'Manager@1234',
     role: 'manager',
-    hostelId: 'H01',
+    hostelId: 'BH-1',
     contactNumber: '9876543210',
   },
   {
-    name: 'Hostel Manager - H02',
-    email: 'manager2@mess.com',
-    password: 'Manager@1234',
-    role: 'manager',
-    hostelId: 'H02',
-    contactNumber: '9876543211',
-  },
-  {
-    name: 'Student One',
+    name: 'Rahul Sharma',
     email: 'student1@mess.com',
     password: 'Student@1234',
     role: 'student',
-    registrationNumber: 'STU-2025-001',
-    hostelId: 'H01',
+    registrationNumber: 'IIT2025001',
+    hostelId: 'BH-1',
     contactNumber: '9000000001',
   },
   {
-    name: 'Student Two',
+    name: 'Priya Gupta',
     email: 'student2@mess.com',
     password: 'Student@1234',
     role: 'student',
-    registrationNumber: 'STU-2025-002',
-    hostelId: 'H01',
+    registrationNumber: 'IIT2025002',
+    hostelId: 'BH-1',
     contactNumber: '9000000002',
   },
 ];
@@ -66,7 +58,14 @@ const seed = async () => {
       const existing = await User.findOne({ email: userData.email });
 
       if (existing) {
-        console.log(`⚠️  Skipping — user already exists: ${userData.email}`);
+        // Update the existing user with new hostelId and other fields
+        existing.name = userData.name;
+        existing.role = userData.role;
+        existing.hostelId = userData.hostelId || existing.hostelId;
+        existing.contactNumber = userData.contactNumber || existing.contactNumber;
+        existing.registrationNumber = userData.registrationNumber || existing.registrationNumber;
+        await existing.save();
+        console.log(`🔄 Updated existing user: ${userData.email} (hostelId: ${userData.hostelId || 'N/A'})`);
         continue;
       }
 
@@ -78,10 +77,9 @@ const seed = async () => {
     console.log('\n🎉 Seeding complete!\n');
     console.log('─────────────────────────────────────────');
     console.log('  Admin    → admin@mess.com       / Admin@1234');
-    console.log('  Manager1 → manager1@mess.com    / Manager@1234  (hostelId: H01)');
-    console.log('  Manager2 → manager2@mess.com    / Manager@1234  (hostelId: H02)');
-    console.log('  Student1 → student1@mess.com    / Student@1234  (hostelId: H01)');
-    console.log('  Student2 → student2@mess.com    / Student@1234  (hostelId: H01)');
+    console.log('  Manager  → manager1@mess.com    / Manager@1234  (BH-1)');
+    console.log('  Student1 → student1@mess.com    / Student@1234  (BH-1)');
+    console.log('  Student2 → student2@mess.com    / Student@1234  (BH-1)');
     console.log('─────────────────────────────────────────');
 
   } catch (err) {
